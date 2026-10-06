@@ -11,7 +11,21 @@ log_file = ""
 def write_log(message, file=log_file):
     with open(file, "a", encoding="utf-8") as f:
         f.write(f'{datetime.now().strftime("%Y-%m-%d - %H:%M:%S")} {message}\n')
-
+        
+def check_folder_size(folder):
+    total_folder_size = 0
+    skipped_files = 0
+    for root, _, files in os.walk(folder):
+        for file in files:
+            try:
+                file_size = os.path.getsize(os.path.join(root, file))
+                total_folder_size += file_size
+            except (PermissionError, FileNotFoundError, OSError) as error:
+                skipped_files += 1
+    if skipped_files > 0:
+        write_log(f"Warning: Could not read size for {skipped_files} files due to permissions.")
+    return total_folder_size
+        
 def bkp_with_os(source, destination):
     errors = 0
     for root, _, files in os.walk(source):
@@ -48,9 +62,14 @@ def bkp_with_rsync(source, destination):
         error_msg = process.stderr.strip()
         write_log(f"rsync error {process.returncode}: {error_msg}")
     
-def main():  
+def main():
     os.makedirs(bkp_folder, exist_ok=True)
-        
+    
+    disk_free_bytes = shutil.disk_usage(bkp_folder).free
+    if disk_free_bytes < (check_folder_size(source_folder) - check_folder_size(bkp_folder)):
+        write_log("Not enough space on disk. Backup aborted")
+        return
+    
     if shutil.which("rsync"):
         bkp_with_rsync(source_folder, bkp_folder)
     else:

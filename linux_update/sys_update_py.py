@@ -71,6 +71,7 @@ def main():
         logger.error("Unknown Operatig System")
         return
     
+    reboot_req = False
 
     for cmd in commands:
         ok, output, error = cmd_execute(cmd["command"])
@@ -92,6 +93,9 @@ def main():
                 elif server_os=="RedHat":
                     packages = [parts[0].split(".")[0] for line in output.splitlines() if (parts:=line.split()) and "." in parts[0]]
 
+                if any("nvidia" in package for package in packages):
+                    reboot_req = True
+
                 if not packages:
                     message = "No packages to upgrade"
                     logger.info(message)
@@ -109,7 +113,7 @@ def main():
         logger.info(message)
         telegram_msg(bot_tkn, chat_id, server_name+" "+message)
 
-    if os.path.exists("/var/run/reboot-required"):
+    if os.path.exists("/var/run/reboot-required") and reboot_req:
         time.sleep(30)
         message = "Reboot requested due to upgrades"
         logger.info(message)

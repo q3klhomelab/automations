@@ -57,7 +57,8 @@ def main():
             {"name": "update_index",    "role": "critical", "stop_on_fail": True,  "command": ["apt", "update"]},
             {"name": "list_upgradable", "role": "report",   "stop_on_fail": False, "command": ["apt", "list", "--upgradable"]},
             {"name": "upgrade",         "role": "critical", "stop_on_fail": True,  "command": ["apt", "upgrade", "-y"]},  #--dry-run
-            {"name": "cleanup",         "role": "cleanup",  "stop_on_fail": False, "command": ["apt", "autoremove", "--purge", "-y"]}
+            {"name": "cleanup",         "role": "cleanup",  "stop_on_fail": False, "command": ["apt", "autoremove", "--purge", "-y"]},
+            {"name": "cache cleanup",   "role": "cleanup",  "stop_on_fail": False, "command": ["apt", "clean"]}
             ]
     elif server_os=="RedHat":
         # RedHat update commands
@@ -65,7 +66,8 @@ def main():
             {"name": "update_index",    "role": "critical", "stop_on_fail": True,  "command": ["dnf", "makecache"]},
             {"name": "list_upgradable", "role": "report",   "stop_on_fail": False, "command": ["dnf", "check-update"]},
             {"name": "upgrade",         "role": "critical", "stop_on_fail": True,  "command": ["dnf", "upgrade", "-y"]},  # --assumeno
-            {"name": "cleanup",         "role": "cleanup",  "stop_on_fail": False, "command": ["dnf", "autoremove", "-y"]}
+            {"name": "cleanup",         "role": "cleanup",  "stop_on_fail": False, "command": ["dnf", "autoremove", "-y"]},
+            {"name": "cache cleanup",   "role": "cleanup",  "stop_on_fail": False, "command": ["dnf", "clean", "packages"]}    # ["dnf", "clean", "all"]
             ]
     else:
         logger.error("Unknown Operatig System")
